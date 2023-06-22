@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="codable">
+    <description>Codable Coding Style</description>
+
+    <arg value="sp"/>
+    <arg name="colors"/>
+    <arg name="cache" value=".phpcs.cache"/>
+    <arg name="extensions" value="php"/>
+
+    <file>src</file>
+
+    <rule ref="PSR12">
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+    </rule>
+
+    <rule ref="PSR2.Classes.PropertyDeclaration.Underscore">
+        <exclude-pattern>./src/MinVWS/Codable/Decoding/DecodingContainer.php</exclude-pattern>
+        <exclude-pattern>./src/MinVWS/Codable/Encoding/EncodingContainer.php</exclude-pattern>
+    </rule>
+</ruleset>
