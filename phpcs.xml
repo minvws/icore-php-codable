@@ -12,9 +12,4 @@
     <rule ref="PSR12">
         <exclude name="Generic.Files.LineLength.TooLong"/>
     </rule>
-
-    <rule ref="PSR2.Classes.PropertyDeclaration.Underscore">
-        <exclude-pattern>./src/MinVWS/Codable/Decoding/DecodingContainer.php</exclude-pattern>
-        <exclude-pattern>./src/MinVWS/Codable/Encoding/EncodingContainer.php</exclude-pattern>
-    </rule>
 </ruleset>

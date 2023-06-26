@@ -4,11 +4,6 @@ namespace MinVWS\Codable\Coding;
 
 use DateTimeZone;
 
-/**
- * Coding key.
- *
- * @package MinVWS\Codable
- */
 class CodingKey
 {
     private string $key;
@@ -20,11 +15,6 @@ class CodingKey
     private ?string $dateTimeFormat = null;
     private ?DateTimeZone $dateTimeZone = null;
 
-    /**
-     * Constructor.
-     *
-     * @param string $key
-     */
     public function __construct(string $key)
     {
         $this->key = $key;
@@ -39,33 +29,17 @@ class CodingKey
         return $this->key;
     }
 
-    /**
-     * Create.
-     *
-     * @param string $key
-     *
-     * @return CodingKey
-     */
     public static function create(string $key): CodingKey
     {
         return new self($key);
     }
 
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * Set name of the serialized property.
-     *
-     * @param string $name
-     *
      * @return $this
      */
     public function name(string $name): self
@@ -78,8 +52,6 @@ class CodingKey
      * Returns the property type.
      *
      * This can either be a built-in PHP type or a class name.
-     *
-     * @return string|null
      */
     public function getType(): ?string
     {
@@ -89,7 +61,7 @@ class CodingKey
     /**
      * Sets the property type.
      *
-     * @param string $type
+     * This can either be a built-in PHP type or a class name.
      *
      * @return $this
      */
@@ -99,44 +71,22 @@ class CodingKey
         return $this;
     }
 
-    /**
-     * Returns if this property is optional.
-     *
-     * @return bool
-     */
     public function isOptional(): bool
     {
         return $this->optional;
     }
 
-    /**
-     * Mark/unmark property as optional.
-     *
-     * @param bool $optional
-     *
-     * @return $this
-     */
     public function optional(bool $optional = true): self
     {
         $this->optional = $optional;
         return $this;
     }
 
-    /**
-     * Returns if this property is read-only.
-     */
     public function isReadOnly(): bool
     {
         return $this->readOnly;
     }
 
-    /**
-     * Mark/unmark property as read-only.
-     *
-     * @param bool $readOnly
-     *
-     * @return $this
-     */
     public function readOnly(bool $readOnly = true): self
     {
         $this->readOnly = $readOnly;
@@ -145,8 +95,6 @@ class CodingKey
 
     /**
      * Returns the element type in case the property is of type array.
-     *
-     * @return string|null
      */
     public function getElementType(): ?string
     {
@@ -155,8 +103,6 @@ class CodingKey
 
     /**
      * Sets the element type in case the property is of type array.
-     *
-     * @param string $elementType
      *
      * @return $this
      */
@@ -168,8 +114,6 @@ class CodingKey
 
     /**
      * Returns the date time format in case the property is of type DateTime.
-     *
-     * @return string|null
      */
     public function getDateTimeFormat(): ?string
     {
@@ -179,9 +123,7 @@ class CodingKey
     /**
      * Sets the date time format in case the property is of type DateTime.
      *
-     * @param string $format
-     *
-     * @return self
+     * @return $this
      */
     public function dateTimeFormat(string $format): self
     {
@@ -191,8 +133,6 @@ class CodingKey
 
     /**
      * Returns the date time format in case the property is of type DateTime.
-     *
-     * @return DateTimeZone|null
      */
     public function getDateTimeZone(): ?DateTimeZone
     {
@@ -202,25 +142,11 @@ class CodingKey
     /**
      * Sets the date time zone in case the property is of type DateTime.
      *
-     * @param DateTimeZone $zone
-     *
-     * @return self
+     * @return $this
      */
     public function dateTimeZone(DateTimeZone $zone): self
     {
         $this->dateTimeZone = $zone;
         return $this;
     }
-}
-
-/**
- * Create coding key.
- *
- * @param string $key
- *
- * @return CodingKey
- */
-function CodingKey(string $key): CodingKey
-{
-    return CodingKey::create($key);
 }

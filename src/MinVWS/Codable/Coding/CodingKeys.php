@@ -13,8 +13,6 @@ use ReflectionProperty;
 
 /**
  * Coding keys trait that can be used to quickly add encodable/decodable support to a class.
- *
- * @package MinVWS\Codable
  */
 trait CodingKeys
 {
@@ -26,7 +24,7 @@ trait CodingKeys
      * Default implementation returns the key names defined in static::$codingKeys
      * (if any) or null (which means all public object properties).
      *
-     * @return (string|CodingKey)[]|null
+     * @return array<string|CodingKey>|null
      */
     protected static function codingKeys(): ?array
     {
@@ -35,8 +33,6 @@ trait CodingKeys
 
     /**
      * Modify the given coding keys
-     *
-     * @param CodingKey $key
      */
     protected static function modifyCodingKey(CodingKey $key): void
     {
@@ -44,8 +40,6 @@ trait CodingKeys
 
     /**
      * Enrich coding keys with all necessary data.
-     *
-     * @return array
      *
      * @throws CodableException
      */
@@ -95,8 +89,6 @@ trait CodingKeys
     /**
      * Returns a cached version of the full coding keys.
      *
-     * @return array
-     *
      * @throws CodableException
      */
     private static function cachedCodingKeys(): array
@@ -110,9 +102,6 @@ trait CodingKeys
 
     /**
      * Encodes the given key.
-     *
-     * @param EncodingContainer $container
-     * @param CodingKey         $key
      *
      * @throws CodableException
      */
@@ -131,8 +120,6 @@ trait CodingKeys
     /**
      * Encode.
      *
-     * @param EncodingContainer $container
-     *
      * @throws CodableException
      */
     public function encode(EncodingContainer $container): void
@@ -146,13 +133,11 @@ trait CodingKeys
     /**
      * Decodes the given key.
      *
-     * @param DecodingContainer $container Decoding container.
-     * @param CodingKey         $key       Key.
-     * @param static|object     $object    Target object.
+     * @param static $object Target object.
      *
      * @throws CodableException
      */
-    protected static function decodeCodingKey(DecodingContainer $container, CodingKey $key, object $object)
+    protected static function decodeCodingKey(DecodingContainer $container, CodingKey $key, self $object)
     {
         $name = $key->getName();
         $property = $key->getKey();
@@ -179,7 +164,7 @@ trait CodingKeys
     /**
      * @inheritDoc
      */
-    public static function decode(DecodingContainer $container, ?object $object = null): object // :static only supported since PHP 8
+    public static function decode(DecodingContainer $container, ?object $object = null): static
     {
         $object = $object ?? new static();
 
