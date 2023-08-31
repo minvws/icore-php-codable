@@ -2,6 +2,7 @@
 
 namespace MinVWS\Codable\Encoding;
 
+use BackedEnum;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -12,6 +13,7 @@ use MinVWS\Codable\Exceptions\CodablePathException;
 use MinVWS\Codable\Exceptions\DateTimeFormatException;
 use MinVWS\Codable\Exceptions\ValueTypeMismatchException;
 use stdClass;
+use UnitEnum;
 
 class EncodingContainer
 {
@@ -142,30 +144,103 @@ class EncodingContainer
     /**
      * @throws CodableException
      */
+    private function encodeObjectOrEnumUsingDelegate(object $value): bool
+    {
+        $delegate = $this->getContext()->getDelegate(get_class($value));
+        if ($delegate === null) {
+            return false;
+        }
+
+        if ($delegate instanceof EncodableDelegate) {
+            $delegate->encode($value, $this);
+            return true;
+        }
+
+        if (is_callable($delegate)) {
+            call_user_func($delegate, $value, $this);
+            return true;
+        }
+
+        if (is_a($delegate, StaticEncodableDelegate::class, true)) {
+            $delegate::encode($value, $this);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private function encodeObjectOrEnumUsingEncoder(object $value): bool
+    {
+        if ($this->encodeObjectOrEnumUsingDelegate($value)) {
+            return true;
+        }
+
+        if ($value instanceof Encodable) {
+            $value->encode($this);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws CodableException
+     */
     public function encodeObject(?object $value): void
+    {
+        if ($value instanceof UnitEnum) {
+            $this->encodeEnum($value);
+            return;
+        }
+
+        if (is_null($value)) {
+            $this->value = $value;
+            return;
+        }
+
+        if ($this->encodeObjectOrEnumUsingEncoder($value)) {
+            return;
+        }
+
+        // no encoder available for object class, try to use the JSON encoder
+        try {
+            $this->value = json_decode(
+                json_encode($value, JSON_THROW_ON_ERROR),
+                $this->getContext()->useAssociativeArraysForObjects(),
+                flags: JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException $e) {
+            throw new CodablePathException(
+                $this->getPath(),
+                "Cannot encode object at path '" . CodablePathException::convertPathToString($this->getPath()) . "'",
+                previous: $e
+            );
+        }
+    }
+
+    /**
+     * @throws CodableException
+     */
+    public function encodeEnum(?UnitEnum $value): void
     {
         if (is_null($value)) {
             $this->value = $value;
             return;
         }
 
-        $delegate = $this->getContext()->getDelegate(get_class($value));
-        if ($delegate instanceof EncodableDelegate) {
-            $delegate->encode($value, $this);
-        } elseif (is_callable($delegate)) {
-            call_user_func($delegate, $value, $this);
-        } elseif ($delegate !== null && is_a($delegate, StaticEncodableDelegate::class, true)) {
-            $delegate::encode($value, $this);
-        } elseif ($value instanceof Encodable) {
-            $value->encode($this);
-        } else {
-            // no encoder available for object class, try to use the JSON encoder
-            try {
-                $this->value = json_decode(json_encode($value, JSON_THROW_ON_ERROR), $this->getContext()->useAssociativeArraysForObjects(), flags: JSON_THROW_ON_ERROR);
-            } catch (JsonException $e) {
-                throw new CodablePathException($this->getPath(), "Cannot encode object at path '" . CodablePathException::convertPathToString($this->getPath()) . "'", previous: $e);
-            }
+        if ($this->encodeObjectOrEnumUsingEncoder($value)) {
+            return;
         }
+
+        if ($value instanceof BackedEnum) {
+            $this->value = $value->value;
+            return;
+        }
+
+        $this->value = $value->name;
     }
 
     public function encodeArray(?iterable $value, ?callable $iterator = null): void

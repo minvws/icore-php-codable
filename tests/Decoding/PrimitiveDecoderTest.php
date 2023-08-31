@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace MinVWS\Tests\Codable\Decoding;
@@ -38,7 +39,6 @@ class PrimitiveDecoderTest extends TestCase
         yield 'positive-float' => ['float', self::faker()->randomFloat()];
         yield 'negative-float' => ['float', self::faker()->randomFloat(PHP_FLOAT_MIN, -0.1)];
         yield ['string', self::faker()->text];
-
     }
 
     public static function primitiveValuesProvider(): Generator
