@@ -125,19 +125,11 @@ class EncodingContainer
         $format = $format ?: $this->getContext()->getDateTimeFormat();
         $tz = $tz ?: $this->getContext()->getDateTimeZone();
         try {
-            if (version_compare(phpversion(), '8.0.0', '<')) {
-                $dateTime = new DateTimeImmutable('@' . $value->getTimestamp(), $tz);
-                // add support for 'p' timezone specifier on PHP < 8.0.0
-                $format = str_replace('p', 'P', $format);
-                $string = str_replace('+00:00', 'Z', $dateTime->format($format));
-            } else {
-                $dateTime = DateTimeImmutable::createFromInterface($value)->setTimezone($tz);
-                $string = $dateTime->format($format);
-            }
-
+            $dateTime = DateTimeImmutable::createFromInterface($value)->setTimezone($tz);
+            $string = $dateTime->format($format);
             $this->encodeString($string);
         } catch (Exception $e) {
-            throw new DateTimeFormatException($this->getPath(), $format);
+            throw new DateTimeFormatException($this->getPath(), $format, previous: $e);
         }
     }
 
@@ -205,7 +197,13 @@ class EncodingContainer
             return;
         }
 
-        // no encoder available for object class, try to use the JSON encoder
+        // no encoder available for object class, check if iterable
+        if (is_iterable($value)) {
+            $this->encodeArray($value);
+            return;
+        }
+
+        // no encoder available for object class, fallback to JSON based serialization
         try {
             $this->value = json_decode(
                 json_encode($value, JSON_THROW_ON_ERROR),

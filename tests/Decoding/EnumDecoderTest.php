@@ -6,8 +6,8 @@ use MinVWS\Codable\Decoding\Decoder;
 use MinVWS\Codable\Exceptions\InvalidValueException;
 use MinVWS\Codable\Exceptions\ValueNotFoundException;
 use MinVWS\Codable\Exceptions\ValueTypeMismatchException;
-use MinVWS\Tests\Codable\Shared\FruitBackedEnum;
-use MinVWS\Tests\Codable\Shared\FruitUnitEnum;
+use MinVWS\Tests\Codable\Shared\Fruit;
+use MinVWS\Tests\Codable\Shared\Vegetable;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
@@ -17,14 +17,14 @@ class EnumDecoderTest extends TestCase
     {
         $container = (new Decoder())->decode('apple');
 
-        $value = $container->decodeEnum(FruitBackedEnum::class);
-        $this->assertEquals(FruitBackedEnum::Apple, $value);
+        $value = $container->decodeEnum(Fruit::class);
+        $this->assertEquals(Fruit::Apple, $value);
 
-        $value = $container->decodeObject(FruitBackedEnum::class);
-        $this->assertEquals(FruitBackedEnum::Apple, $value);
+        $value = $container->decodeObject(Fruit::class);
+        $this->assertEquals(Fruit::Apple, $value);
 
-        $value = $container->decodeObject(FruitBackedEnum::class);
-        $this->assertEquals(FruitBackedEnum::Apple, $value);
+        $value = $container->decodeObject(Fruit::class);
+        $this->assertEquals(Fruit::Apple, $value);
     }
 
     public static function invalidValuesForBackedEnumProvider(): array
@@ -45,27 +45,27 @@ class EnumDecoderTest extends TestCase
     {
         $this->expectException($expectedException);
         $decoder = new Decoder();
-        $decoder->decode($value)->decodeEnum(FruitBackedEnum::class);
+        $decoder->decode($value)->decodeEnum(Fruit::class);
     }
 
     public function testDecodeUnitEnum(): void
     {
-        $container = (new Decoder())->decode('Apple');
+        $container = (new Decoder())->decode('Tomato');
 
-        $value = $container->decodeEnum(FruitUnitEnum::class);
-        $this->assertEquals(FruitUnitEnum::Apple, $value);
+        $value = $container->decodeEnum(Vegetable::class);
+        $this->assertEquals(Vegetable::Tomato, $value);
 
-        $value = $container->decodeObject(FruitUnitEnum::class);
-        $this->assertEquals(FruitUnitEnum::Apple, $value);
+        $value = $container->decodeObject(Vegetable::class);
+        $this->assertEquals(Vegetable::Tomato, $value);
 
-        $value = $container->decodeObject(FruitUnitEnum::class);
-        $this->assertEquals(FruitUnitEnum::Apple, $value);
+        $value = $container->decodeObject(Vegetable::class);
+        $this->assertEquals(Vegetable::Tomato, $value);
     }
 
     public static function invalidValuesForUnitEnumProvider(): array
     {
         return [
-            'invalid-value' => ['apple', InvalidValueException::class],
+            'invalid-value' => ['tomato', InvalidValueException::class],
             'type-mismatch-int' => [1, ValueTypeMismatchException::class],
             'type-mismatch-array' => [[], ValueTypeMismatchException::class],
             'value-not-found' => [null, ValueNotFoundException::class]
@@ -80,6 +80,6 @@ class EnumDecoderTest extends TestCase
     {
         $this->expectException($expectedException);
         $decoder = new Decoder();
-        $decoder->decode($value)->decodeEnum(FruitUnitEnum::class);
+        $decoder->decode($value)->decodeEnum(Vegetable::class);
     }
 }

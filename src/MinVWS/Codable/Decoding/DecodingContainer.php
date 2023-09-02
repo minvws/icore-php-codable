@@ -2,6 +2,7 @@
 
 namespace MinVWS\Codable\Decoding;
 
+use ArrayAccess;
 use BackedEnum;
 use DateTime;
 use DateTimeImmutable;
@@ -9,6 +10,7 @@ use DateTimeZone;
 use Exception;
 use IntBackedEnum;
 use MinVWS\Codable\Exceptions\CodableException;
+use MinVWS\Codable\Exceptions\CodablePathException;
 use MinVWS\Codable\Exceptions\DateTimeFormatException;
 use MinVWS\Codable\Exceptions\InvalidValueException;
 use MinVWS\Codable\Exceptions\KeyNotFoundException;
@@ -16,6 +18,7 @@ use MinVWS\Codable\Exceptions\KeyTypeMismatchException;
 use MinVWS\Codable\Exceptions\PathNotFoundException;
 use MinVWS\Codable\Exceptions\ValueNotFoundException;
 use MinVWS\Codable\Exceptions\ValueTypeMismatchException;
+use ReflectionClass;
 use ReflectionEnum;
 use ReflectionException;
 use StringBackedEnum;

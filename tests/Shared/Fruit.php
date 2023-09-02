@@ -2,7 +2,7 @@
 
 namespace MinVWS\Tests\Codable\Shared;
 
-enum FruitBackedEnum: string
+enum Fruit: string
 {
     case Apple = 'apple';
     case Banana = 'banana';
