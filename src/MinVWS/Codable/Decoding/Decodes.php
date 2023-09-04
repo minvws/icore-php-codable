@@ -73,12 +73,12 @@ trait Decodes
         ReflectionCodableProperty $property,
         DecodingContainer $propertyContainer
     ): null {
-        if ($property->allowsNull()) {
-            return null;
+        if (!$property->allowsNull()) {
+            // throws an exception
+            $propertyContainer->validatePresent();
         }
 
-        // throws an exception
-        $propertyContainer->validatePresent();
+        return null;
     }
 
     /**
@@ -162,11 +162,11 @@ trait Decodes
         }
 
         if (!$propertyContainer->isPresent()) {
-            $values[$property->getName()] = static::decodeNullCodableProperty($property, $propertyContainer, $object);
+            $values[$property->getName()] = self::decodeNullCodableProperty($property, $propertyContainer);
             return;
         }
 
-        $values[$property->getName()] = static::decodePresentCodableProperty($property, $propertyContainer);
+        $values[$property->getName()] = self::decodePresentCodableProperty($property, $propertyContainer);
     }
 
     public static function decode(DecodingContainer $container, ?object $object = null): self
@@ -179,7 +179,7 @@ trait Decodes
         }
 
         if ($object === null) {
-            $args = static::extractPromotedPropertyValues($class, $values);
+            $args = self::extractPromotedPropertyValues($class, $values);
             $object = static::newInstanceForCodableClass($class, $args);
         }
 
