@@ -4,7 +4,7 @@ namespace MinVWS\Tests\Codable\Shared;
 
 use DateTimeInterface;
 use MinVWS\Codable\Coding\Codable;
-use MinVWS\Codable\Coding\Codes;
+use MinVWS\Codable\Coding\CodableSupport;
 use MinVWS\Codable\Decoding\DecodingContainer;
 use MinVWS\Codable\Encoding\EncodingContainer;
 use MinVWS\Codable\Reflection\Attributes\CodableArray;
@@ -16,7 +16,7 @@ use MinVWS\Codable\Reflection\Attributes\CodableName;
 
 class Person implements Codable
 {
-    use Codes;
+    use CodableSupport;
 
     #[CodableDateTime(format: 'Y-m-d')]
     public ?DateTimeInterface $birthDate = null;

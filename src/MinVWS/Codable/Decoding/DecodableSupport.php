@@ -16,7 +16,7 @@ use MinVWS\Codable\Reflection\ReflectionCodableClass;
 use MinVWS\Codable\Reflection\ReflectionCodableProperty;
 use ReflectionNamedType;
 
-trait Decodes
+trait DecodableSupport
 {
     protected static function setValueForCodableProperty(ReflectionCodableProperty $property, object $object, mixed $value): void
     {
