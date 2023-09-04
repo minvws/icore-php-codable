@@ -2,6 +2,7 @@
 
 namespace MinVWS\Tests\Codable\Decoding;
 
+use Generator;
 use MinVWS\Codable\Decoding\Decoder;
 use MinVWS\Tests\Codable\Shared\Fruit;
 use MinVWS\Tests\Codable\Shared\Person;
@@ -9,9 +10,9 @@ use PHPUnit\Framework\TestCase;
 
 class DecodesTest extends TestCase
 {
-    public function testDecode(): void
+    public static function decodeProvider(): Generator
     {
-        $data = [
+        yield 'john' => [[
             'firstName' => 'John',
             'surname' => 'Doe',
             'birthDate' => '1994-04-01',
@@ -20,17 +21,33 @@ class DecodesTest extends TestCase
             'dislikedFruits' => ['apple'],
             'dislikedVegetables' => ['Lettuce', 'Spinach'],
             'notes' => ['Married to Jane']
-        ];
+        ]];
 
+        yield 'jane' => [[
+            'firstName' => 'Jane',
+            'infix' => 'von',
+            'surname' => 'Müllhousen',
+            'birthDate' => null,
+            'dislikedFruits' => ['apple', 'banana'],
+            'dislikedVegetables' => []
+        ]];
+    }
+
+    /**
+     * @dataProvider decodeProvider
+     */
+    public function testDecode(array $data): void
+    {
         $decoder = new Decoder();
         $person = $decoder->decode($data)->decodeObject(Person::class);
-        $this->assertEquals('John', $person->firstName);
-        $this->assertEquals('Doe', $person->lastName);
-        $this->assertEquals('1994-04-01', $person->birthDate?->format('Y-m-d'));
-        $this->assertEquals($data['address']['country'], $person->country);
-        $this->assertEquals(Fruit::Banana, $person->favoriteFruit);
-        $this->assertEquals([Fruit::Apple], $person->getDislikedFruits());
-        $this->assertEquals([], $person->getDislikedVegetables());
-        $this->assertEquals($data['notes'][0], $person->notes[0]);
+        $this->assertEquals($data['firstName'], $person->firstName);
+        $this->assertEquals($data['infix'] ?? null, $person->infix);
+        $this->assertEquals($data['surname'], $person->lastName);
+        $this->assertEquals($data['birthDate'], $person->birthDate?->format('Y-m-d'));
+        $this->assertEquals($data['address']['country'] ?? null, $person->country);
+        $this->assertEquals($data['favoriteFruit'] ?? null, $person->favoriteFruit?->value);
+        $this->assertEquals($data['dislikedFruits'] ?? [], array_map(fn (Fruit $f) => $f->value, $person->getDislikedFruits()));
+        $this->assertEmpty($person->getDislikedVegetables());
+        $this->assertEquals($data['notes'] ?? [], $person->notes->toArray());
     }
 }

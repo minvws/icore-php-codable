@@ -2,6 +2,8 @@
 
 namespace MinVWS\Codable\Reflection;
 
+use ArgumentCountError;
+use Exception;
 use MinVWS\Codable\Exceptions\CodableException;
 use ReflectionClass;
 use ReflectionException;
@@ -95,7 +97,7 @@ class ReflectionCodableClass
                 $sortedArgs[] = $args[$parameter->getName()];
             } elseif ($parameter->isDefaultValueAvailable()) {
                 $sortedArgs[] = $parameter->getDefaultValue();
-            } elseif ($parameter->isOptional()) {
+            } elseif ($parameter->isOptional() || $parameter->getType()?->allowsNull()) {
                 $sortedArgs[] = null;
             } else {
                 throw new CodableException(
@@ -109,10 +111,10 @@ class ReflectionCodableClass
         }
 
         try {
-            $instance = $this->refClass->newInstanceArgs($args);
+            $instance = $this->refClass->newInstanceArgs($sortedArgs);
             assert(is_a($instance, $this->class));
             return $instance;
-        } catch (ReflectionException $e) {
+        } catch (Exception $e) {
             throw new CodableException(
                 sprintf(
                     'Error creating instance for class "%s": %s',

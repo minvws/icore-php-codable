@@ -23,26 +23,29 @@ trait Decodes
         $property->getReflectionProperty()->setValue($object, $value);
     }
 
-    protected static function newInstanceForCodableClass(ReflectionCodableClass $class, array &$values): self
+    private static function extractPromotedPropertyValues(ReflectionCodableClass $class, array &$values): array
     {
-        $args = [];
+        $promotedValues = [];
 
         foreach ($values as $propertyName => $value) {
             $property = $class->getProperty($propertyName);
-            if (!$property->isPromoted()) {
-                continue;
+            if ($property->isPromoted()) {
+                $promotedValues[$propertyName] = $value;
+                unset($values[$propertyName]);
             }
-
-            $args[$propertyName] = $value;
-            unset($values[$propertyName]);
         }
 
+        return $promotedValues;
+    }
+
+    protected static function newInstanceForCodableClass(ReflectionCodableClass $class, array $args): self
+    {
         $instance = $class->newInstanceArgs($args);
         assert($instance instanceof static);
         return $instance;
     }
 
-    protected static function shouldDecodeProperty(ReflectionCodableProperty $property, DecodingContainer $container, ?object $object): bool
+    protected static function shouldDecodeCodableProperty(ReflectionCodableProperty $property, DecodingContainer $container, ?object $object): bool
     {
         $ignore = $property->getAttribute(CodableIgnore::class)?->type;
         if ($ignore === CodableIgnoreType::Always || $ignore === CodableIgnoreType::OnDecode) {
@@ -58,7 +61,79 @@ trait Decodes
             return false;
         }
 
+
+
         return true;
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private static function decodeNullCodableProperty(
+        ReflectionCodableProperty $property,
+        DecodingContainer $propertyContainer
+    ): null {
+        if ($property->allowsNull()) {
+            return null;
+        }
+
+        // throws an exception
+        $propertyContainer->validatePresent();
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private static function decodeArrayCodableProperty(ReflectionCodableProperty $property, DecodingContainer $propertyContainer): array
+    {
+        $attr = $property->getAttribute(CodableArray::class);
+        return $propertyContainer->decodeArray($attr?->elementType, $attr?->keyType);
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private static function decodeArrayObjectCodableProperty(ReflectionCodableProperty $property, DecodingContainer $propertyContainer): object
+    {
+        $attr = $property->getAttribute(CodableArrayObject::class);
+        assert($attr !== null);
+        $arr = $propertyContainer->decodeArray($attr->elementType, $attr->keyType);
+        $object = call_user_func($attr->factory, $arr);
+        assert(is_object($object));
+        return $object;
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private static function decodeDateTimeCodableProperty(ReflectionCodableProperty $property, DecodingContainer $propertyContainer): DateTimeInterface
+    {
+        $attr = $property->getAttribute(CodableDateTime::class);
+        return $propertyContainer->decodeDateTime($attr?->format, $attr?->timeZone);
+    }
+
+    /**
+     * @throws CodableException
+     */
+    private static function decodePresentCodableProperty(
+        ReflectionCodableProperty $property,
+        DecodingContainer $propertyContainer
+    ): mixed {
+        $type = $property->getType(ReflectionNamedType::class);
+
+        if ($type->isBuiltin() && $type->getName() === 'array') {
+            return self::decodeArrayCodableProperty($property, $propertyContainer);
+        }
+
+        if (!$type->isBuiltin() && $property->hasAttribute(CodableArrayObject::class)) {
+            return self::decodeArrayObjectCodableProperty($property, $propertyContainer);
+        }
+
+        if (!$type->isBuiltin() && is_a($type->getName(), DateTimeInterface::class, true)) {
+            return self::decodeDateTimeCodableProperty($property, $propertyContainer);
+        }
+
+        return $propertyContainer->decode($type->getName());
     }
 
     /**
@@ -70,7 +145,7 @@ trait Decodes
         ?object $object,
         array &$values
     ): void {
-        if (!static::shouldDecodeProperty($property, $container, $object)) {
+        if (!static::shouldDecodeCodableProperty($property, $container, $object)) {
             return;
         }
 
@@ -82,41 +157,16 @@ trait Decodes
 
         $name = $property->getAttribute(CodableName::class)?->name ?? $property->getName();
         $propertyContainer = $container->nestedContainer($name);
-
-        if ($propertyContainer->exists() && !$property->allowsNull()) {
-            $propertyContainer->validatePresent();
-        }
-
-        if ($object === null && !$propertyContainer->exists() && $property->hasDefaultValue()) {
-            $values[$property->getName()] = $property->getDefaultValue();
-            return;
-        }
-
-        if ($object === null && !$propertyContainer->exists() && $property->allowsNull()) {
-            $values[$property->getName()] = null;
-            return;
-        }
-
         if (!$propertyContainer->exists()) {
             return;
         }
 
-        $type = $property->getType(ReflectionNamedType::class);
-
-        if ($type->isBuiltin() && $type->getName() === 'array') {
-            $attr = $property->getAttribute(CodableArray::class);
-            $values[$property->getName()] = $propertyContainer->decodeArray($attr?->elementType, $attr?->keyType);
-        } elseif (!$type->isBuiltin() && $property->hasAttribute(CodableArrayObject::class)) {
-            $attr = $property->getAttribute(CodableArrayObject::class);
-            assert($attr !== null);
-            $arr = $propertyContainer->decodeArray($attr->elementType, $attr->keyType);
-            $values[$property->getName()] = call_user_func($attr->factory, $arr);
-        } elseif (!$type->isBuiltin() && is_a($type->getName(), DateTimeInterface::class, true)) {
-            $attr = $property->getAttribute(CodableDateTime::class);
-            $values[$property->getName()] = $propertyContainer->decodeDateTime($attr?->format, $attr?->timeZone);
-        } else {
-            $values[$property->getName()] = $propertyContainer->decode($type->getName());
+        if (!$propertyContainer->isPresent()) {
+            $values[$property->getName()] = static::decodeNullCodableProperty($property, $propertyContainer, $object);
+            return;
         }
+
+        $values[$property->getName()] = static::decodePresentCodableProperty($property, $propertyContainer);
     }
 
     public static function decode(DecodingContainer $container, ?object $object = null): self
@@ -129,7 +179,8 @@ trait Decodes
         }
 
         if ($object === null) {
-            $object = static::newInstanceForCodableClass($class, $values);
+            $args = static::extractPromotedPropertyValues($class, $values);
+            $object = static::newInstanceForCodableClass($class, $args);
         }
 
         foreach ($values as $propertyName => $value) {
