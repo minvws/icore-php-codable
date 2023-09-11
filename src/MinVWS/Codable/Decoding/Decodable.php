@@ -10,11 +10,11 @@ interface Decodable
      * Decode to this class.
      *
      * @param DecodingContainer $container Decoding container.
-     * @param static|null       $object    Decode into the given object.
-     *
-     * @return static
+     * @param self|null         $object    Decode into the given object.
      *
      * @throws CodableException
+     *
+     * @SuppressWarnings("unused")
      */
-    public static function decode(DecodingContainer $container, ?self $object = null): static;
+    public static function decode(DecodingContainer $container, ?self $object = null): self;
 }

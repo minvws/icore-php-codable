@@ -2,17 +2,28 @@
 
 namespace MinVWS\Codable\Decoding;
 
+use ArrayAccess;
+use BackedEnum;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use IntBackedEnum;
 use MinVWS\Codable\Exceptions\CodableException;
+use MinVWS\Codable\Exceptions\CodablePathException;
 use MinVWS\Codable\Exceptions\DateTimeFormatException;
+use MinVWS\Codable\Exceptions\InvalidValueException;
 use MinVWS\Codable\Exceptions\KeyNotFoundException;
 use MinVWS\Codable\Exceptions\KeyTypeMismatchException;
 use MinVWS\Codable\Exceptions\PathNotFoundException;
 use MinVWS\Codable\Exceptions\ValueNotFoundException;
 use MinVWS\Codable\Exceptions\ValueTypeMismatchException;
+use ReflectionClass;
+use ReflectionEnum;
+use ReflectionException;
+use StringBackedEnum;
+use UnitEnum;
+use ValueError;
 
 class DecodingContainer
 {
@@ -627,6 +638,68 @@ class DecodingContainer
     /**
      * @template T of object
      *
+     * @param class-string<T> $class  Object class.
+     * @param T|null          $object Decode into the given object.
+     *
+     * @return T
+     */
+    private function decodeObjectOrEnumUsingDelegate(string $class, ?object $object = null): ?object
+    {
+        $delegate = $this->getContext()->getDelegate($class);
+        if ($delegate === null) {
+            return null;
+        }
+
+        if ($delegate instanceof DecodableDelegate) {
+            $result = $delegate->decode($class, $this, $object);
+            assert(is_a($result, $class));
+            return $result;
+        }
+
+        if (is_callable($delegate)) {
+            $result = call_user_func($delegate, $this, $object);
+            assert(is_object($result) && is_a($result, $class));
+            return $result;
+        }
+
+        if (is_a($delegate, StaticDecodableDelegate::class, true)) {
+            $result = $delegate::decode($class, $this, $object);
+            assert(is_a($result, $class));
+            return $result;
+        }
+
+        return null;
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param class-string<T>|null $class  Object class.
+     * @param T|null               $object Decode into the given object.
+     *
+     * @return ($class is null ? object : T) | null
+     */
+    private function decodeObjectOrEnumUsingDecoder(?string $class, ?object $object = null): ?object
+    {
+        if ($class === null) {
+            return null;
+        }
+
+        $result = $this->decodeObjectOrEnumUsingDelegate($class, $object);
+        if ($result !== null) {
+            return $result;
+        }
+
+        if (is_string($class) && is_a($class, Decodable::class, true)) {
+            return $class::decode($this, is_object($object) && is_a($object, $class) ? $object : null);
+        }
+
+        return null;
+    }
+
+    /**
+     * @template T of object
+     *
      * @param class-string<T>|null $class  Object class.
      * @param T|null               $object Decode into the given object.
      * @param bool                 $strict Check if the value in the container is an object
@@ -637,28 +710,22 @@ class DecodingContainer
      */
     public function decodeObject(?string $class = null, ?object $object = null, bool $strict = false): object
     {
+        if ($class !== null && is_a($class, UnitEnum::class, true)) {
+            return $this->decodeEnum($class);
+        }
+
         $this->validateExistsAndPresent();
 
         if ($strict && !is_object($this->getRawValue())) {
             throw new ValueTypeMismatchException($this->getPath(), gettype($this->getRawValue()), $class ?? 'object');
         }
 
-        $delegate = $class !== null ? $this->getContext()->getDelegate($class) : null;
-
-        if ($delegate instanceof DecodableDelegate) {
-            assert($class !== null);
-            return $delegate->decode($class, $this, $object);
-        } elseif (is_callable($delegate)) {
-            assert($class !== null);
-            $result = call_user_func($delegate, $this, $object);
-            assert(is_object($result) && is_a($result, $class));
+        $result = $this->decodeObjectOrEnumUsingDecoder($class, $object);
+        if ($result !== null) {
             return $result;
-        } elseif ($delegate !== null && is_a($delegate, StaticDecodableDelegate::class, true)) {
-            assert($class !== null);
-            return $delegate::decode($class, $this, $object);
-        } elseif (is_string($class) && is_a($class, Decodable::class, true)) {
-            return $class::decode($this, is_object($object) && is_a($object, $class) ? $object : null);
-        } elseif (!is_object($this->getRawValue())) {
+        }
+
+        if (!is_object($this->getRawValue())) {
             // we do this check as one of the last things because certain classes like DateTime
             // are encoded to string literals
             throw new ValueTypeMismatchException($this->getPath(), gettype($this->getRawValue()), $class ?? 'object');
@@ -716,6 +783,93 @@ class DecodingContainer
 
         try {
             return $this->decodeObject($class, $object, $strict);
+        } catch (PathNotFoundException | ValueNotFoundException) {
+            return null;
+        }
+    }
+
+    /**
+     * @template T of UnitEnum
+     *
+     * @param class-string<T> $class Enum class.
+     *
+     * @return T
+     *
+     * @throws PathNotFoundException | ValueTypeMismatchException | ValueNotFoundException | CodableException
+     */
+    public function decodeEnum(string $class): UnitEnum
+    {
+        $this->validateExistsAndPresent();
+
+        $result = $this->decodeObjectOrEnumUsingDecoder($class);
+        if ($result !== null) {
+            return $result;
+        }
+
+        try {
+            if (is_a($class, BackedEnum::class, true)) {
+                $type = (new ReflectionEnum($class))->getBackingType()?->getName();
+                assert($type !== null);
+
+                if ($type === 'string') {
+                    return $class::from($this->decodeString());
+                } else {
+                    return $class::from($this->decodeInt());
+                }
+            }
+
+            $name = $this->decodeString();
+            foreach ($class::cases() as $case) {
+                if ($case->name === $name) {
+                    return $case;
+                }
+            }
+
+            throw new InvalidValueException($this->getPath(), $name, $class);
+        } catch (ValueError | ReflectionException $e) {
+            throw new InvalidValueException($this->getPath(), $this->getRawValue(), $class, previous: $e);
+        }
+    }
+
+    /**
+     * @template T of UnitEnum
+     *
+     * @param class-string<T> $class Enum class.
+     *
+     * @return T|null
+     *
+     * @throws ValueTypeMismatchException | ValueNotFoundException| CodableException
+     */
+    public function decodeEnumIfExists(string $class): ?UnitEnum
+    {
+        if (!$this->exists()) {
+            return null;
+        }
+
+        try {
+            return $this->decodeEnum($class);
+        } catch (PathNotFoundException) {
+            return null;
+        }
+    }
+
+    /**
+     * @template T of UnitEnum
+     *
+     * @param class-string<T> $class Enum class.
+     *
+     * @return T|null
+     *
+     * @throws ValueTypeMismatchException | CodableException
+     */
+    public function decodeEnumIfPresent(string $class): ?UnitEnum
+    {
+        if (!$this->isPresent()) {
+            return null;
+        }
+
+        try {
+            return $this->decodeEnum($class);
         } catch (PathNotFoundException | ValueNotFoundException) {
             return null;
         }

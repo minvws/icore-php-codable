@@ -8,8 +8,13 @@
     <arg name="extensions" value="php"/>
 
     <file>src</file>
+    <file>tests</file>
 
     <rule ref="PSR12">
         <exclude name="Generic.Files.LineLength.TooLong"/>
+    </rule>
+    <rule ref="PSR1">
+        <!-- disabled until readonly class support is released -->
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
     </rule>
 </ruleset>

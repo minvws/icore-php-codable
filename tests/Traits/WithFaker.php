@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace MinVWS\Tests\Codable\Traits;
@@ -17,10 +18,10 @@ trait WithFaker
 
     protected static function faker(): Generator
     {
-        if (static::$faker === null) {
-            static::$faker = static::createFaker();
+        if (self::$faker === null) {
+            self::$faker = static::createFaker();
         }
 
-        return static::$faker;
+        return self::$faker;
     }
 }
