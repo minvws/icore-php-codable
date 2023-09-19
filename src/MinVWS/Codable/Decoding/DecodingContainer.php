@@ -294,6 +294,10 @@ class DecodingContainer
     {
         $this->validateExists();
 
+        if ($type === 'mixed') {
+            $type = null;
+        }
+
         $type = $type ?? gettype($this->value);
 
         return match ($type) {
