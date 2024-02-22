@@ -270,7 +270,7 @@ layer and as such should only be used for classes you don't control or that have
 
 ### Encoding using property attributes
 
-Just like for decoding, you can PHP attributes to give PHPCodable hints for encoding your classes. To do so, we can
+Just like for decoding, you can add PHP attributes to give PHPCodable hints for encoding your classes. To do so, we can
 simply implement the `Encodable` interface and use the `EncodableSupport` trait in our existing `Person` class from
 earlier:
 
