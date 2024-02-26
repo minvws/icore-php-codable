@@ -1,6 +1,6 @@
-# PHPCodable
+# Codable
 
-PHPCodable allows you to convert types into and out of an external representation (for example JSON). 
+Codable allows you to convert types into and out of an external representation (for example JSON). 
 
 It is inspired by Swift's [Encoding/Decoding/Serialization](https://developer.apple.com/documentation/swift/encoding-decoding-and-serialization) 
 library, but includes some unique features like delegates.
@@ -16,14 +16,14 @@ library, but includes some unique features like delegates.
 
 ## Installation
 ```shell
-composer require minvws/php-codable
+composer require minvws/codable
 ```
 
 This library requires PHP 8.2 or newer.
 
 ## Decoding
 
-There are several ways in which you can use PHPCodable to decode, for example, a JSON snippet:
+There are several ways in which you can use Codable to decode, for example, a JSON snippet:
 
 - Using standard PHP types, similar to `json_decode`, but more strict if you want.
 - Using property attributes inside your classes.
@@ -68,7 +68,7 @@ echo "$firstName doesn't like " . implode(',', $dislikedVegetables) . "\n";
 
 But if you want to do that, you could just as well use a simple `json_decode` call.
 
-One of the major benefits of using PHPCodable is that you can be more strict in what types you expect. We could
+One of the major benefits of using Codable is that you can be more strict in what types you expect. We could
 rewrite the code as follows:
 
 ```php
@@ -134,17 +134,17 @@ readonly class Person implements Decodable
 }
 ```
 
-As you can see our classes implement the `Decodable` interface. This lets PHPCodable know that you want to decode the
+As you can see our classes implement the `Decodable` interface. This lets Codable know that you want to decode the
 object yourself. We use the `DecodableSupport` trait so that we don't have to write the decoding code ourselves.
-PHPCodable uses reflection to determine field names, types etc. It also checks if it needs to inject values using the
+Codable uses reflection to determine field names, types etc. It also checks if it needs to inject values using the
 constructor or if it can simply assign the values to object properties (even `private` and `protected` properties
 are supported). 
 
 Unfortunately PHP doesn't let you statically type arrays, but by using the `CodableArray` attribute we can let
-PHPCodable know what types to expect for the array's elements.
+Codable know what types to expect for the array's elements.
 
 The `CodableName` attribute allows us to use a different name for our class property than what is used in the JSON. We
-set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although PHPCodable is 
+set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although Codable is 
 just as happy to simply let PHP's DateTime classes determine if they can parse a given date. We can also make fields 
 optional, in which case a null value will be assigned if the field is missing or contains a null value in the JSON.
 
@@ -241,16 +241,16 @@ To register a `StaticDecodableDelegate` you can simply register its class. You c
 delegate in which case it will receive the `DecodingContainer` and optional existing instance as its arguments.
 
 ## Encoding
-PHPCodable also supports encoding of your custom types to JSON (or other serialization formats). There are several
+Codable also supports encoding of your custom types to JSON (or other serialization formats). There are several
 ways to implement this:
 
-- Let PHPCodable map PHP types to JSON types, similar to `json_encode`.
+- Let Codable map PHP types to JSON types, similar to `json_encode`.
 - By implementing the `JsonSerializable` interface.
 - Using property attributes inside your classes.
 - By implementing an `encode` method inside your class.
 - By implementing an `encode` method in a delegate class.
 
-### Let PHPCodable map PHP types to JSON types
+### Let Codable map PHP types to JSON types
 
 This is the easiest, but also the least flexible, way of encoding your objects:
 
@@ -265,13 +265,13 @@ properties will be encoded.
 
 ### Implementing JsonSerializable
 
-If your class implements the `JsonSerializable` interface this will be respected by PHPCodable and the output
+If your class implements the `JsonSerializable` interface this will be respected by Codable and the output
 of the `jsonSerialize` method will be used for encoding your object. However this is merely meant as a compatibility
 layer and as such should only be used for classes you don't control or that have an existing proved implementation.
 
 ### Encoding using property attributes
 
-Just like for decoding, you can add PHP attributes to give PHPCodable hints for encoding your classes. To do so, we can
+Just like for decoding, you can add PHP attributes to give Codable hints for encoding your classes. To do so, we can
 simply implement the `Encodable` interface and use the `EncodableSupport` trait in our existing `Person` class from
 earlier:
 
@@ -295,7 +295,7 @@ readonly class Person implements Codable
     // ...
 }
 ```
-You can use the same attributes as mentioned earlier, but as PHPCodable also has access to your `private` and
+You can use the same attributes as mentioned earlier, but as Codable also has access to your `private` and
 `protected` properties there is an additional attribute that might come in handy; `CodableIgnore`. This attribute lets
 you control wetter a property should be ignored when encoding, decoding or both.
 
@@ -343,7 +343,7 @@ final readonly class Person implements Encodable
 This way you can even choose to encode nested objects inside the owner class instead of delegating it to the
 respective class. 
 
-If you assign values to the container PHPCodable will automatically try to determine the best way to encode the value.
+If you assign values to the container Codable will automatically try to determine the best way to encode the value.
 But you can also choose to explicitly encode to a certain type using one of the `encode<type>` methods.
 
 ### Implementing the `encode` method in a delegate class

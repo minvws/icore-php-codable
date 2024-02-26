@@ -1,5 +1,6 @@
 {
     "name": "minvws/codable",
+    "version": "1.0",
     "description": "Encode/decode objects to/from various formats",
     "license": "MIT",
     "authors": [
