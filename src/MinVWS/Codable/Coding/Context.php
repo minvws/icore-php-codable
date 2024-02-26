@@ -231,10 +231,5 @@ abstract class Context
         unset($this->delegates[$class]);
     }
 
-    /**
-     * Create child context.
-     *
-     * @return static
-     */
     abstract public function createChildContext(): self;
 }

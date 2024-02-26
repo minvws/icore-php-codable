@@ -8,7 +8,7 @@ use Attribute;
 use DateTimeZone;
 use Exception;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 readonly class CodableDateTime
 {
     public ?DateTimeZone $timeZone;

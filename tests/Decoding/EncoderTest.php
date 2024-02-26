@@ -1,19 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MinVWS\Tests\Codable\Decoding;
 
+use DateTimeImmutable;
 use Generator;
 use MinVWS\Codable\Encoding\Encoder;
-use MinVWS\Tests\Codable\Shared\Collection;
+use MinVWS\Codable\Encoding\EncodingContext;
 use MinVWS\Tests\Codable\Shared\Fruit;
+use MinVWS\Tests\Codable\Shared\FruitBasket;
 use MinVWS\Tests\Codable\Shared\Person;
 use MinVWS\Tests\Codable\Shared\Vegetable;
 use MinVWS\Tests\Codable\Traits\WithFaker;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-class EncodesTest extends TestCase
+class EncoderTest extends TestCase
 {
     use WithFaker;
+
+    public static function encodeSimpleTypeProvider(): Generator
+    {
+        yield 'null' => [null, null];
+        yield 'true' => [true, true];
+        yield 'false' => [false, false];
+        yield '0' => [0, 0];
+        yield '42' => [42, 42];
+        yield '12.3' => [12.3, 12.3];
+        yield '1.0' => [1.0, 1.0];
+        yield 'Fruit::Apple' => [Fruit::Apple, 'apple'];
+        yield 'Vegetable::Tomato' => [Vegetable::Tomato, 'Tomato'];
+        yield "['a', 'b', 'c']" => [['a', 'b', 'c'], ['a', 'b', 'c']];
+        yield "[4, 5, 6]" => [[4, 5, 6], [4, 5, 6]];
+        yield 'Mixed array' => [
+            [1, 'b', 'a' => Fruit::Banana, null, 42 => Vegetable::Lettuce],
+            [1, 'b', 'a' => 'banana', null, 42 => 'Lettuce']
+        ];
+        yield 'Fruit basket' => [
+            new FruitBasket([Fruit::Orange, Fruit::Apple, Fruit::Orange]),
+            (object)['fruits' => ['orange', 'apple', 'orange']]
+        ];
+
+        $now = new DateTimeImmutable();
+        yield 'DateTime' => [$now, $now->format('Y-m-d\TH:i:sp')];
+
+        $dtContext = new EncodingContext();
+        $dtContext->setDateTimeFormat('Y-m-d');
+        yield 'DateTime format' => [$now, $now->format('Y-m-d'), $dtContext];
+    }
+
+    #[DataProvider('encodeSimpleTypeProvider')]
+    public function testEncodeSimpleType(mixed $input, mixed $expectedOutput, ?EncodingContext $context = null): void
+    {
+        $encoder = new Encoder($context);
+        $output = $encoder->encode($input);
+        $this->assertEquals($expectedOutput, $output);
+    }
 
     private static function buildPerson(
         bool $hasInfix,
@@ -41,7 +84,7 @@ class EncodesTest extends TestCase
         return $person;
     }
 
-    public static function encodeProvider(): Generator
+    public static function encodeComplexTypeProvider(): Generator
     {
         yield [self::buildPerson(true, true, true, 1, 1, 0)];
         yield [self::buildPerson(true, true, true, 3, 2, 2)];
@@ -49,10 +92,8 @@ class EncodesTest extends TestCase
         yield [self::buildPerson(false, true, false, 2, 0, 0)];
     }
 
-    /**
-     * @dataProvider encodeProvider
-     */
-    public function testEncode(Person $person): void
+    #[DataProvider('encodeComplexTypeProvider')]
+    public function testEncodeComplexType(Person $person): void
     {
         $encoder = new Encoder();
         $encoder->getContext()->setUseAssociativeArraysForObjects(true);

@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MinVWS\Tests\Codable\Decoding;
 
 use Generator;
 use MinVWS\Codable\Decoding\Decoder;
 use MinVWS\Tests\Codable\Shared\Fruit;
 use MinVWS\Tests\Codable\Shared\Person;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-class DecodesTest extends TestCase
+class DecoderTest extends TestCase
 {
     public static function decodeProvider(): Generator
     {
@@ -33,9 +36,7 @@ class DecodesTest extends TestCase
         ]];
     }
 
-    /**
-     * @dataProvider decodeProvider
-     */
+    #[DataProvider('decodeProvider')]
     public function testDecode(array $data): void
     {
         $decoder = new Decoder();
