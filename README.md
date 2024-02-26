@@ -137,7 +137,8 @@ readonly class Person implements Decodable
 As you can see our classes implement the `Decodable` interface. This lets PHPCodable know that you want to decode the
 object yourself. We use the `DecodableSupport` trait so that we don't have to write the decoding code ourselves.
 PHPCodable uses reflection to determine field names, types etc. It also checks if it needs to inject values using the
-constructor or if it can simply assign the values to object properties. 
+constructor or if it can simply assign the values to object properties (even `private` and `protected` properties
+are supported). 
 
 Unfortunately PHP doesn't let you statically type arrays, but by using the `CodableArray` attribute we can let
 PHPCodable know what types to expect for the array's elements.

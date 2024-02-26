@@ -16,6 +16,7 @@ use MinVWS\Codable\Exceptions\InvalidValueException;
 use MinVWS\Codable\Exceptions\KeyNotFoundException;
 use MinVWS\Codable\Exceptions\KeyTypeMismatchException;
 use MinVWS\Codable\Exceptions\PathNotFoundException;
+use MinVWS\Codable\Exceptions\ReadOnlyException;
 use MinVWS\Codable\Exceptions\ValueNotFoundException;
 use MinVWS\Codable\Exceptions\ValueTypeMismatchException;
 use ReflectionClass;
@@ -25,13 +26,14 @@ use StringBackedEnum;
 use UnitEnum;
 use ValueError;
 
-class DecodingContainer
+class DecodingContainer implements ArrayAccess
 {
     public function __construct(
         private readonly mixed $value,
         private readonly DecodingContext $context,
         private readonly ?DecodingContainer $parent = null,
-        private readonly int|string|null $key = null
+        private readonly int|string|null $key = null,
+        private readonly bool $exists = true
     ) {
     }
 
@@ -62,11 +64,7 @@ class DecodingContainer
 
     public function exists(): bool
     {
-        if ($this->isPresent() || $this->getParent() === null || $this->getKey() === null) {
-            return true;
-        }
-
-        return $this->getParent()->contains($this->getKey());
+        return $this->exists;
     }
 
     /**
@@ -1040,17 +1038,20 @@ class DecodingContainer
     /**
      * Returns the nested container for the given key.
      */
-    public function nestedContainer(string|int $key): DecodingContainer
+    public function nestedContainer(string|int $key, bool $strict = true, bool $debug = false): DecodingContainer
     {
         if (is_object($this->value)) {
-            $nestedValue = $this->value->$key ?? null;
+            $exists = (!$strict || is_string($key)) && property_exists($this->value, (string)$key);
+            $nestedValue = $exists ? $this->value->$key : null;
         } elseif (is_array($this->value)) {
-            $nestedValue = $this->value[$key] ?? null;
+            $exists = in_array($key, array_keys($this->value), $strict);
+            $nestedValue = $exists ? $this->value[$key] : null;
         } else {
+            $exists = false;
             $nestedValue = null;
         }
 
-        return new DecodingContainer($nestedValue, $this->getContext()->createChildContext(), $this, $key);
+        return new DecodingContainer($nestedValue, $this->getContext()->createChildContext(), $this, $key, $exists);
     }
 
     public function nestedContainerForPath(array $path): DecodingContainer
@@ -1085,5 +1086,33 @@ class DecodingContainer
     public function __get(string $key): DecodingContainer
     {
         return $this->nestedContainer($key);
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        assert(is_string($offset) || is_int($offset));
+        return $this->contains($offset);
+    }
+
+    public function offsetGet(mixed $offset): DecodingContainer
+    {
+        assert(is_string($offset) || is_int($offset));
+        return $this->nestedContainer($offset);
+    }
+
+    /**
+     * @throws ReadOnlyException
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new ReadOnlyException();
+    }
+
+    /**
+     * @throws ReadOnlyException
+     */
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new ReadOnlyException();
     }
 }

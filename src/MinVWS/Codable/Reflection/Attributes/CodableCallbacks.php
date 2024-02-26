@@ -9,7 +9,7 @@ use Closure;
 use MinVWS\Codable\Decoding\DecodingContainer;
 use MinVWS\Codable\Encoding\EncodingContainer;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 readonly class CodableCallbacks
 {
     public Closure|array|null $encode;
