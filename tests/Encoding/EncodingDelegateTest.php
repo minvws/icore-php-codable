@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MinVWS\Tests\Codable\Decoding;
+namespace Encoding;
 
 use MinVWS\Codable\Encoding\EncodableDelegate;
 use MinVWS\Codable\Encoding\Encoder;

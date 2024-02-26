@@ -17,8 +17,6 @@ abstract class Context
      */
     private ?string $mode = null;
 
-    private ?string $view = null;
-
     /**
      * @var array
      */
@@ -64,32 +62,6 @@ abstract class Context
             return $this->mode;
         } elseif ($this->parent !== null) {
             return $this->parent->getMode();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Optional view.
-     *
-     * @param string|null $view
-     */
-    public function setView(?string $view): void
-    {
-        $this->view = $view;
-    }
-
-    /**
-     * Returns the optional view.
-     *
-     * @return string|null
-     */
-    public function getView(): ?string
-    {
-        if (isset($this->view)) {
-            return $this->view;
-        } elseif ($this->parent !== null) {
-            return $this->parent->getView();
         } else {
             return null;
         }

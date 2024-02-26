@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MinVWS\Tests\Codable\Decoding;
+namespace Encoding;
 
 use DateTimeImmutable;
 use Generator;
@@ -10,6 +10,7 @@ use MinVWS\Codable\Encoding\Encoder;
 use MinVWS\Codable\Encoding\EncodingContext;
 use MinVWS\Tests\Codable\Shared\Fruit;
 use MinVWS\Tests\Codable\Shared\FruitBasket;
+use MinVWS\Tests\Codable\Shared\FruitSalad;
 use MinVWS\Tests\Codable\Shared\Person;
 use MinVWS\Tests\Codable\Shared\Vegetable;
 use MinVWS\Tests\Codable\Traits\WithFaker;
@@ -108,5 +109,38 @@ class EncoderTest extends TestCase
         $this->assertEquals(array_map(fn ($f) => $f->value, $person->getDislikedFruits()), $data['dislikedFruits']);
         $this->assertArrayNotHasKey('dislikedVegetables', $data);
         $this->assertEquals($person->notes->toArray(), $data['notes']);
+    }
+
+
+    public static function encodingModeProvider(): Generator
+    {
+        yield [null, true];
+        yield [EncodingContext::MODE_STORE, true];
+        yield [EncodingContext::MODE_DISPLAY, false];
+    }
+
+    #[DataProvider('encodingModeProvider')]
+    public function testEncodingMode(?string $mode, bool $expectsAuthor): void
+    {
+        $salad = new FruitSalad(
+            title: 'Banana Orange Salad',
+            description: 'Wonderful salad of banana mixed with oranges',
+            fruits: [Fruit::Banana, Fruit::Orange],
+            author: 'John Doe'
+        );
+
+        $encoder = new Encoder();
+        $encoder->getContext()->setMode($mode);
+        $encoder->getContext()->setUseAssociativeArraysForObjects(true);
+        $data = $encoder->encode($salad);
+        $this->assertIsArray($data);
+        $this->assertEquals($salad->title, $data['title']);
+        $this->assertEquals($salad->description, $data['description']);
+        $this->assertCount(count($salad->fruits), $data['fruits']);
+        if ($expectsAuthor) {
+            $this->assertEquals($salad->author, $data['author']);
+        } else {
+            $this->assertArrayNotHasKey('author', $data);
+        }
     }
 }

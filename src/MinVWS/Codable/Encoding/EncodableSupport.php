@@ -31,7 +31,11 @@ trait EncodableSupport
         }
 
         $encodingModes = $property->getAttribute(CodableModes::class)?->encodingModes;
-        if ($encodingModes !== null && !in_array($container->getContext()->getMode(), $encodingModes)) {
+        if (
+            $container->getContext()->getMode() !== null &&
+            $encodingModes !== null &&
+            !in_array($container->getContext()->getMode(), $encodingModes)
+        ) {
             return false;
         }
 
