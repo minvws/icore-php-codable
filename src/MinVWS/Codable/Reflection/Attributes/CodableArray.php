@@ -6,7 +6,7 @@ namespace MinVWS\Codable\Reflection\Attributes;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 readonly class CodableArray
 {
     /**

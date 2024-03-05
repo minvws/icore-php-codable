@@ -7,7 +7,7 @@ namespace MinVWS\Codable\Reflection\Attributes;
 use Attribute;
 use MinVWS\Codable\Reflection\CodableIgnoreType;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 readonly class CodableModes
 {
     /**

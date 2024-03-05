@@ -53,7 +53,11 @@ trait DecodableSupport
         }
 
         $decodingModes = $property->getAttribute(CodableModes::class)?->decodingModes;
-        if ($decodingModes !== null && !in_array($container->getContext()->getMode(), $decodingModes)) {
+        if (
+            $container->getContext()->getMode() !== null &&
+            $decodingModes !== null &&
+            !in_array($container->getContext()->getMode(), $decodingModes)
+        ) {
             return false;
         }
 

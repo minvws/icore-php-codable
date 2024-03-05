@@ -7,7 +7,7 @@ namespace MinVWS\Codable\Reflection\Attributes;
 use Attribute;
 use Closure;
 
-#[Attribute]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 readonly class CodableArrayObject extends CodableArray
 {
     public Closure $factory;

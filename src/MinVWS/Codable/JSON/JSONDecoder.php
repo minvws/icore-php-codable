@@ -63,7 +63,7 @@ class JSONDecoder
      * @throws CodableException
      * @throws JsonException
      */
-    public function decode(string $json, bool $associative = false, int $depth = 512, int $flags = 0): DecodingContainer
+    public function decode(string $json, ?bool $associative = null, int $depth = 512, int $flags = 0): DecodingContainer
     {
         $data = json_decode($json, $associative, $depth, $flags | JSON_THROW_ON_ERROR);
         return $this->decoder->decode($data);
