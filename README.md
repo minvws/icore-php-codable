@@ -1,4 +1,4 @@
-# Codable
+# Codable (minvws/codable)
 
 Codable allows you to convert types into and out of an external representation (for example JSON). 
 
@@ -14,14 +14,34 @@ library, but includes some unique features like delegates.
 - Customize encoding/decoding of objects in a delegate class.
 - Serialization format agnostic.
 
+## Prerequisites
+
+- PHP >= 8.2
+- Composer
+
 ## Installation
+Install the package through composer. Since this is currently a private package, you must
+enable the repository in your `composer.json` file:
+
+```json
+{
+    "repositories": {
+        "minvws/codable": {
+            "type": "vcs",
+            "url": "git@github.com:minvws/nl-rdo-php-codable"
+        }
+    }
+}
+```
+
+After that, you can install the package:
+
 ```shell
 composer require minvws/codable
 ```
 
-This library requires PHP 8.2 or newer.
-
-## Decoding
+## Usage 
+### Decoding
 
 There are several ways in which you can use Codable to decode, for example, a JSON snippet:
 
@@ -51,7 +71,7 @@ We will use the following JSON snippet to have a look at these different approac
 }
 ```
 
-### Decoding using standard PHP types
+#### Decoding using standard PHP types
 
 To decode the JSON snippet to standard PHP types you can simply call the `decode` method on the `JSONDecoder` and call
 the `decode` method on the resulting `DecodingContainer` to convert the entire JSON structure to their default PHP
@@ -83,7 +103,7 @@ Although we need a few more method calls the code now automatically throws an ex
 used in, the JSON is not as we expected.
 
 
-### Decoding using property attributes
+#### Decoding using property attributes
 
 To make our life a little easier, and use auto-completion in our IDE, we can decode the JSON in our own types. Let's
 start by creating some enums for the fruits and vegetables:
@@ -166,7 +186,7 @@ This looks a lot like our initial code snippet, but this time all the objects an
 statically checked during the decoding process. We also get auto-completion and type checking when writing this
 code in an IDE.
 
-### Implementing the static `decode` method in your class
+#### Implementing the static `decode` method in your class
 
 Sometimes you might want some more control over the decoding process. In that case you can implement the `Decodable`
 interface yourself:
@@ -203,7 +223,7 @@ a `decode<type>`, `decode<type>IfExists` and `decode<type>IfPresent` method for 
 variant always expects the field to be there with a non-null value, the `decode<type>IfExists` variant allows the field
 to not exist in the JSON, but if it does exist it needs to contain a non-null value.
 
-### Implementing the `decode` method in a delegate class
+#### Implementing the `decode` method in a delegate class
 
 Sometimes your code needs to interface with a library you didn't write yourself and contains types you want to decode
 into or sometimes you want decode different pieces of JSON to the same type. To make this possible you can choose to
@@ -240,7 +260,7 @@ decoding hierarchy.
 To register a `StaticDecodableDelegate` you can simply register its class. You can even register a `callable` as a
 delegate in which case it will receive the `DecodingContainer` and optional existing instance as its arguments.
 
-## Encoding
+### Encoding
 Codable also supports encoding of your custom types to JSON (or other serialization formats). There are several
 ways to implement this:
 
@@ -250,7 +270,7 @@ ways to implement this:
 - By implementing an `encode` method inside your class.
 - By implementing an `encode` method in a delegate class.
 
-### Let Codable map PHP types to JSON types
+#### Let Codable map PHP types to JSON types
 
 This is the easiest, but also the least flexible, way of encoding your objects:
 
@@ -263,13 +283,13 @@ This works similar to how PHP's `json_encode` would encode your types, with the 
 DateTime objects will be encoded to an ISO-8601 date/time string. This also means for your objects that only public
 properties will be encoded.
 
-### Implementing JsonSerializable
+#### Implementing JsonSerializable
 
 If your class implements the `JsonSerializable` interface this will be respected by Codable and the output
 of the `jsonSerialize` method will be used for encoding your object. However this is merely meant as a compatibility
 layer and as such should only be used for classes you don't control or that have an existing proved implementation.
 
-### Encoding using property attributes
+#### Encoding using property attributes
 
 Just like for decoding, you can add PHP attributes to give Codable hints for encoding your classes. To do so, we can
 simply implement the `Encodable` interface and use the `EncodableSupport` trait in our existing `Person` class from
@@ -322,7 +342,7 @@ Other useful attribute are `CodableCallbacks`, which lets you override the encod
 certain property, and the `CodableModes` attribute, which lets you only encode (or decode) a property for certain usage
 scenario's (for example only encode to the database, but not for API output).
 
-### Implementing the `encode` method in your class
+#### Implementing the `encode` method in your class
 
 If you want full control over the encoding process you can also choose to implement your own `encode` method:
 
@@ -393,3 +413,7 @@ request on the GitHub repository of this package.
 This package is open-source and released under the 
 [European Union Public License version 1.2](LICENSE.txt). 
 You are free to use, modify, and distribute the package in accordance with the terms of the license.
+
+
+## Part of iCore
+This package is part of the iCore project.
