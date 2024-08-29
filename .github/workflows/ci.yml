@@ -30,9 +30,9 @@ jobs:
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.REPO_READ_ONLY_TOKEN }}"}}'
         run: composer install  --no-interaction --no-scripts --no-progress --prefer-dist --no-ansi
-      - name: PHPStan
+      - name: Static analysis with PHPStan
         run: composer phpstan
-      - name: phpcs
+      - name: Coding style PSR12 Check
         run: composer phpcs
       - name: Execute tests (Unit and Feature)
         run: composer test
