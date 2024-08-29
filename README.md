@@ -159,14 +159,14 @@ As you can see our classes implement the `Decodable` interface. This lets Codabl
 object yourself. We use the `DecodableSupport` trait so that we don't have to write the decoding code ourselves.
 Codable uses reflection to determine field names, types etc. It also checks if it needs to inject values using the
 constructor or if it can simply assign the values to object properties (even `private` and `protected` properties
-are supported). 
+are supported).
 
 Unfortunately PHP doesn't let you statically type arrays, but by using the `CodableArray` attribute we can let
 Codable know what types to expect for the array's elements.
 
 The `CodableName` attribute allows us to use a different name for our class property than what is used in the JSON. We
-set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although Codable is 
-just as happy to simply let PHP's DateTime classes determine if they can parse a given date. We can also make fields 
+set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although Codable is
+just as happy to simply let PHP's DateTime classes determine if they can parse a given date. We can also make fields
 optional, in which case a null value will be assigned if the field is missing or contains a null value in the JSON.
 
 Backed enumerations are decoded using their backed value. Enumerations that are not backed by an integer or string value
@@ -228,7 +228,7 @@ to not exist in the JSON, but if it does exist it needs to contain a non-null va
 
 Sometimes your code needs to interface with a library you didn't write yourself and contains types you want to decode
 into or sometimes you want decode different pieces of JSON to the same type. To make this possible you can choose to
-write a delegate class. Your delegate class can either implement the `DecodableDelegate` or 
+write a delegate class. Your delegate class can either implement the `DecodableDelegate` or
 `StaticDecodableDelegate` interface with either a non-static or static `decode` method. Let's look at an example:
 
 ```php
