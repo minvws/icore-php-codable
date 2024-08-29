@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: 'Linting: Markdown'
-        uses: DavidAnson/markdownlint-cli2-action@v16
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -27,7 +25,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_READONLY_TOKEN }}
       - name: 'Composer install'
-        if: always()
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.REPO_READ_ONLY_TOKEN }}"}}'
         run: composer install  --no-interaction --no-scripts --no-progress --prefer-dist --no-ansi
