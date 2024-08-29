@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    tags: [ v* ]
+  pull_request:
+
+env:
+  PHP_VERSION: 8.2
+
+jobs:
+  validate:
+    name: 'Build & validate'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: 'Linting: Markdown'
+        uses: DavidAnson/markdownlint-cli2-action@v16
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: xdebug, zip, pcov
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_READONLY_TOKEN }}
+      - name: 'Composer install'
+        if: always()
+        env:
+          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.REPO_READ_ONLY_TOKEN }}"}}'
+        run: composer install  --no-interaction --no-scripts --no-progress --prefer-dist --no-ansi
+      - name: PHPStan
+        run: composer phpstan
+      - name: phpcs
+        run: composer phpcs
+      - name: Execute tests (Unit and Feature)
+        run: composer test
+      - name: Run SonarCloud scanner
+        uses: minvws/nl-irealisatie-generic-pipelines/.github/actions/sonarcloud@main
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
