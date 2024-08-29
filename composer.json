@@ -29,7 +29,7 @@
         }
     },
     "scripts": {
-        "phpstan": "vendor/bin/phpstan analyze -c phpstan.neon.dist",
+        "phpstan": "vendor/bin/phpstan analyze -c phpstan.neon.dist --error-format=prettyJson > phpstan.json",
         "phpcs": "vendor/bin/phpcs",
         "test": "XDEBUG_MODE=coverage phpunit --log-junit=report-phpunit.xml --coverage-text --coverage-clover=coverage-phpunit.xml"
     }
