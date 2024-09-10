@@ -1,8 +1,8 @@
 # Codable (minvws/codable)
 
-Codable allows you to convert types into and out of an external representation (for example JSON). 
+Codable allows you to convert types into and out of an external representation (for example JSON).
 
-It is inspired by Swift's [Encoding/Decoding/Serialization](https://developer.apple.com/documentation/swift/encoding-decoding-and-serialization) 
+It is inspired by Swift's [Encoding/Decoding/Serialization](https://developer.apple.com/documentation/swift/encoding-decoding-and-serialization)
 library, but includes some unique features like delegates.
 
 ## Features
@@ -20,6 +20,7 @@ library, but includes some unique features like delegates.
 - Composer
 
 ## Installation
+
 Install the package through composer. Since this is currently a private package, you must
 enable the repository in your `composer.json` file:
 
@@ -40,7 +41,8 @@ After that, you can install the package:
 composer require minvws/codable
 ```
 
-## Usage 
+## Usage
+
 ### Decoding
 
 There are several ways in which you can use Codable to decode, for example, a JSON snippet:
@@ -102,7 +104,6 @@ echo "$firstName doesn't like " . implode(',', $dislikedVegetables) . "\n";
 Although we need a few more method calls the code now automatically throws an exception if the structure of, or types
 used in, the JSON is not as we expected.
 
-
 #### Decoding using property attributes
 
 To make our life a little easier, and use auto-completion in our IDE, we can decode the JSON in our own types. Let's
@@ -158,14 +159,14 @@ As you can see our classes implement the `Decodable` interface. This lets Codabl
 object yourself. We use the `DecodableSupport` trait so that we don't have to write the decoding code ourselves.
 Codable uses reflection to determine field names, types etc. It also checks if it needs to inject values using the
 constructor or if it can simply assign the values to object properties (even `private` and `protected` properties
-are supported). 
+are supported).
 
 Unfortunately PHP doesn't let you statically type arrays, but by using the `CodableArray` attribute we can let
 Codable know what types to expect for the array's elements.
 
 The `CodableName` attribute allows us to use a different name for our class property than what is used in the JSON. We
-set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although Codable is 
-just as happy to simply let PHP's DateTime classes determine if they can parse a given date. We can also make fields 
+set an expected date/time format for the birthdate using the `CodableDateTime` attribute, although Codable is
+just as happy to simply let PHP's DateTime classes determine if they can parse a given date. We can also make fields
 optional, in which case a null value will be assigned if the field is missing or contains a null value in the JSON.
 
 Backed enumerations are decoded using their backed value. Enumerations that are not backed by an integer or string value
@@ -227,7 +228,7 @@ to not exist in the JSON, but if it does exist it needs to contain a non-null va
 
 Sometimes your code needs to interface with a library you didn't write yourself and contains types you want to decode
 into or sometimes you want decode different pieces of JSON to the same type. To make this possible you can choose to
-write a delegate class. Your delegate class can either implement the `DecodableDelegate` or 
+write a delegate class. Your delegate class can either implement the `DecodableDelegate` or
 `StaticDecodableDelegate` interface with either a non-static or static `decode` method. Let's look at an example:
 
 ```php
@@ -254,13 +255,13 @@ $container = $decoder->decode($json);
 $person = $container->decode(Person::class);
 ```
 
-This even works if your class has its own `Decodable` implementation and also works multiple levels deep in the 
-decoding hierarchy.
+This even works if your class has its own `Decodable` implementation and also works multiple levels deep in the decoding hierarchy.
 
 To register a `StaticDecodableDelegate` you can simply register its class. You can even register a `callable` as a
 delegate in which case it will receive the `DecodingContainer` and optional existing instance as its arguments.
 
 ### Encoding
+
 Codable also supports encoding of your custom types to JSON (or other serialization formats). There are several
 ways to implement this:
 
@@ -279,6 +280,7 @@ $person = new Person(...);
 $encoder = new JSONEncoder();
 echo $encoder->encode($person);
 ```
+
 This works similar to how PHP's `json_encode` would encode your types, with the most notable exception that
 DateTime objects will be encoded to an ISO-8601 date/time string. This also means for your objects that only public
 properties will be encoded.
@@ -315,6 +317,7 @@ readonly class Person implements Codable
     // ...
 }
 ```
+
 You can use the same attributes as mentioned earlier, but as Codable also has access to your `private` and
 `protected` properties there is an additional attribute that might come in handy; `CodableIgnore`. This attribute lets
 you control wetter a property should be ignored when encoding, decoding or both.
@@ -360,8 +363,9 @@ final readonly class Person implements Encodable
     }
 }
 ```
+
 This way you can even choose to encode nested objects inside the owner class instead of delegating it to the
-respective class. 
+respective class.
 
 If you assign values to the container Codable will automatically try to determine the best way to encode the value.
 But you can also choose to explicitly encode to a certain type using one of the `encode<type>` methods.
@@ -394,6 +398,7 @@ $encoder = new JSONEncoder();
 $encoder->getContext()->registerDelegate(Person::class, new PersonEncodableDelegate());
 $json = $encoder->encode($person);
 ```
+
 This even works if your class has its own `Encodable` implementation and also works multiple levels deep in the
 encoding hierarchy.
 
@@ -410,10 +415,9 @@ request on the GitHub repository of this package.
 
 ## License
 
-This package is open-source and released under the 
-[European Union Public License version 1.2](LICENSE.txt). 
+This package is open-source and released under the [European Union Public License version 1.2](LICENSE.txt).
 You are free to use, modify, and distribute the package in accordance with the terms of the license.
 
-
 ## Part of iCore
+
 This package is part of the iCore project.
