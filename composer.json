@@ -1,7 +1,7 @@
 {
     "name": "minvws/codable",
     "description": "Encode/decode objects to/from various formats",
-    "license": "MIT",
+    "license": "EUPL-1.2",
     "authors": [
         {
             "name": "Peter Verhage",
