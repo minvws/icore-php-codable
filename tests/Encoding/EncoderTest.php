@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Encoding;
 
+use Countable;
 use DateTimeImmutable;
 use Generator;
 use MinVWS\Codable\Encoding\Encoder;
@@ -17,6 +18,26 @@ use MinVWS\Tests\Codable\Traits\WithFaker;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @phpstan-type PersonShape array{
+ *     firstName: string,
+ *     infix: string,
+ *     surname: string,
+ *     birthDate: string,
+ *     favoriteFruit: string,
+ *     address: array{
+ *         country: string,
+ *     },
+ *     dislikedFruits: array<Fruit>,
+ *     notes: array<string>,
+ * }
+ * @phpstan-type FruitSaladShape array{
+ *     title: string,
+ *     description: string,
+ *     author: string,
+ *     fruits: Countable,
+ * }
+ */
 class EncoderTest extends TestCase
 {
     use WithFaker;
@@ -98,6 +119,8 @@ class EncoderTest extends TestCase
     {
         $encoder = new Encoder();
         $encoder->getContext()->setUseAssociativeArraysForObjects(true);
+
+        /** @var PersonShape $data */
         $data = $encoder->encode($person);
         $this->assertIsArray($data);
         $this->assertEquals($person->firstName, $data['firstName']);
@@ -119,6 +142,7 @@ class EncoderTest extends TestCase
         yield [EncodingContext::MODE_DISPLAY, false];
     }
 
+
     #[DataProvider('encodingModeProvider')]
     public function testEncodingMode(?string $mode, bool $expectsAuthor): void
     {
@@ -132,6 +156,8 @@ class EncoderTest extends TestCase
         $encoder = new Encoder();
         $encoder->getContext()->setMode($mode);
         $encoder->getContext()->setUseAssociativeArraysForObjects(true);
+
+        /** @var FruitSaladShape $data */
         $data = $encoder->encode($salad);
         $this->assertIsArray($data);
         $this->assertEquals($salad->title, $data['title']);
