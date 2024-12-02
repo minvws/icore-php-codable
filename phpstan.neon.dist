@@ -3,9 +3,11 @@ parameters:
         - ./src
         - ./tests
     level: max
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false
     universalObjectCratesClasses:
         - MinVWS\Codable\Encoding\EncodingContainer
         - MinVWS\Codable\Decoding\DecodingContainer
     editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+
+    ignoreErrors:
+        - identifier: missingType.generics
+        - identifier: missingType.iterableValue
