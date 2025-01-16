@@ -1,1 +1,2 @@
-* @minvws/ggd-contact-codeowners @minvws/brba-php-codeowners
+.github/CODEOWNERS @minvws/irealisatie-operations
+* @minvws/brba-php-codeowners
