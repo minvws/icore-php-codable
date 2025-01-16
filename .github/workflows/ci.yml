@@ -24,11 +24,7 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: xdebug, zip, pcov
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_READONLY_TOKEN }}
       - name: 'Composer install'
-        env:
-          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.REPO_READ_ONLY_TOKEN }}"}}'
         run: composer install  --no-interaction --no-scripts --no-progress --prefer-dist --no-ansi
       - name: Static analysis with PHPStan
         run: composer phpstan
