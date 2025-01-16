@@ -29,7 +29,7 @@ enable the repository in your `composer.json` file:
     "repositories": {
         "minvws/codable": {
             "type": "vcs",
-            "url": "git@github.com:minvws/nl-rdo-php-codable"
+            "url": "git@github.com:minvws/icore-php-codable"
         }
     }
 }
