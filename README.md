@@ -21,21 +21,7 @@ library, but includes some unique features like delegates.
 
 ## Installation
 
-Install the package through composer. Since this is currently a private package, you must
-enable the repository in your `composer.json` file:
-
-```json
-{
-    "repositories": {
-        "minvws/codable": {
-            "type": "vcs",
-            "url": "git@github.com:minvws/icore-php-codable"
-        }
-    }
-}
-```
-
-After that, you can install the package:
+You can install the package via composer:
 
 ```shell
 composer require minvws/codable
