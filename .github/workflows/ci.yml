@@ -32,7 +32,7 @@ jobs:
         run: composer phpcs
       - name: Execute tests (Unit and Feature)
         run: composer test
-      - name: 'Run SonarCloud scanner'
+      - name: Run SonarQube scan
         if: ${{contains(github.ref, '/pull/')}}
         uses: minvws/action-sonarqube@v1
         with:
