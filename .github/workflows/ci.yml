@@ -34,6 +34,6 @@ jobs:
         run: composer test
       - name: 'Run SonarCloud scanner'
         if: ${{contains(github.ref, '/pull/')}}
-        uses: SonarSource/sonarcloud-github-action@v2.2.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        uses: minvws/action-sonarqube@v1
+        with:
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
