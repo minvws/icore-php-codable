@@ -32,18 +32,8 @@ jobs:
         run: composer phpcs
       - name: Execute tests (Unit and Feature)
         run: composer test
-
-  sonar:
-    name: SonarCloud
-    runs-on: ubuntu-22.04
-    needs: validate
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Run SonarQube scan
-        uses: minvws/action-sonarqube@v1
-        with:
-          sonar-token: ${{ secrets.SONAR_TOKEN }}
+      - name: 'Run SonarCloud scanner'
+        if: ${{contains(github.ref, '/pull/')}}
+        uses: SonarSource/sonarcloud-github-action@v2.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
