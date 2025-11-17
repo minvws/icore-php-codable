@@ -34,10 +34,15 @@ jobs:
         run: composer test
 
   sonar:
-    name: 'SonarCloud'
+    name: SonarCloud
     runs-on: ubuntu-22.04
     needs: validate
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Run SonarQube scan
         uses: minvws/action-sonarqube@v1
         with:
